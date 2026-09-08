@@ -46,7 +46,7 @@ class BookingOverlapTest extends TestCase
             'status' => 'confirmed'
         ]);
 
-        // Coba booking di jam yang sama 
+        // booking di jam yang sama 
         $response = $this->withHeaders(['X-User-Id' => $this->user->id])
             ->postJson('/api/bookings', [
                 'room_id' => $this->room->id,
@@ -73,6 +73,65 @@ class BookingOverlapTest extends TestCase
                 'room_id' => $this->room->id,
                 'start_time' => '2026-10-10 10:30:00',
                 'end_time' => '2026-10-10 11:30:00',
+            ]);
+
+        $response->assertStatus(409);
+    }
+    public function test_rejects_nested_overlap()
+    {
+        // Booking awal: 10:00 - 12:00
+        Booking::create([
+            'room_id' => $this->room->id, 'user_id' => $this->user->id,
+            'start_time' => '2026-10-10 10:00:00', 'end_time' => '2026-10-10 12:00:00',
+            'status' => 'confirmed'
+        ]);
+
+        // booking "bersarang" di dalamnya: 10:30 - 11:30
+        $response = $this->withHeaders(['X-User-Id' => $this->user->id])
+            ->postJson('/api/bookings', [
+                'room_id' => $this->room->id,
+                'start_time' => '2026-10-10 10:30:00',
+                'end_time' => '2026-10-10 11:30:00',
+            ]);
+
+        $response->assertStatus(409);
+    }
+
+    public function test_rejects_overlap_at_start()
+    {
+        // Booking awal: 10:00 - 12:00
+        Booking::create([
+            'room_id' => $this->room->id, 'user_id' => $this->user->id,
+            'start_time' => '2026-10-10 10:00:00', 'end_time' => '2026-10-10 12:00:00',
+            'status' => 'confirmed'
+        ]);
+
+        // Coba memotong di awal: 09:30 - 10:30
+        $response = $this->withHeaders(['X-User-Id' => $this->user->id])
+            ->postJson('/api/bookings', [
+                'room_id' => $this->room->id,
+                'start_time' => '2026-10-10 09:30:00',
+                'end_time' => '2026-10-10 10:30:00',
+            ]);
+
+        $response->assertStatus(409);
+    }
+
+    public function test_rejects_overlap_at_end()
+    {
+        // Booking awal: 10:00 - 12:00
+        Booking::create([
+            'room_id' => $this->room->id, 'user_id' => $this->user->id,
+            'start_time' => '2026-10-10 10:00:00', 'end_time' => '2026-10-10 12:00:00',
+            'status' => 'confirmed'
+        ]);
+
+        // Coba memotong di akhir: 11:30 - 12:30
+        $response = $this->withHeaders(['X-User-Id' => $this->user->id])
+            ->postJson('/api/bookings', [
+                'room_id' => $this->room->id,
+                'start_time' => '2026-10-10 11:30:00',
+                'end_time' => '2026-10-10 12:30:00',
             ]);
 
         $response->assertStatus(409);

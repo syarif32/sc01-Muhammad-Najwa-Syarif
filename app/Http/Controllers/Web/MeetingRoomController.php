@@ -44,7 +44,19 @@ class MeetingRoomController extends Controller
 
         return redirect()->route('meeting.index')->with('success', 'Ruangan baru berhasil ditambahkan!');
     }
+    // edit Ruangan
+    public function updateRoom(Request $request, Room $room)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'capacity' => 'required|integer|min:1',
+            'location' => 'required|string|max:255',
+        ]);
 
+        $room->update($request->all());
+
+        return redirect()->route('meeting.index')->with('success', 'Data ruangan berhasil diperbarui!');
+    }
     // Menghapus Ruangan
     public function destroyRoom(Room $room)
     {

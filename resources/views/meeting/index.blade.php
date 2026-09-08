@@ -12,10 +12,10 @@
         <!-- HEADER -->
         <header class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex justify-between items-center">
             <div>
-                <h1 class="text-2xl font-bold text-indigo-600">Sistem Reservasi Ruang Meeting</h1>
-                <p class="text-sm text-gray-500">Dashboard lengkap memenuhi kriteria Mandatory (CRUD Room, Booking, Overlap Check, & Cancel Policy)</p>
+                <h1 class="text-2xl font-bold">Sistem Reservasi Ruang Meeting</h1>
+                
             </div>
-            <span class="text-xs bg-indigo-50 text-indigo-700 font-semibold px-3 py-1 rounded-full border border-indigo-200">Full Feature UI</span>
+            
         </header>
         @if(session('success'))
             <div class="p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm font-medium">
@@ -58,23 +58,47 @@
                 <!-- DAFTAR RUANGAN & HAPUS -->
                 <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                     <h3 class="text-md font-semibold mb-3 text-gray-700">Daftar Ruangan Tersedia</h3>
-                    <div class="space-y-2 max-h-60 overflow-y-auto">
-                        @forelse($rooms as $r)
-                            <div class="flex justify-between items-center p-2.5 bg-gray-50 border border-gray-200 rounded text-sm">
+                    <div class="space-y-3 max-h-80 overflow-y-auto">
+                    @forelse($rooms as $r)
+                        <div class="p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm space-y-2">
+                            <!-- Info Ruangan -->
+                            <div class="flex justify-between items-start">
                                 <div>
-                                    <p class="font-medium text-gray-800">{{ $r->name }}</p>
-                                    <p class="text-xs text-gray-500">Kapasitas: {{ $r->capacity }} | {{ $r->location }}</p>
+                                    <p class="font-semibold text-gray-800">{{ $r->name }}</p>
+                                    <p class="text-xs text-gray-500">Kapasitas: {{ $r->capacity }} orang | Lokasi: {{ $r->location }}</p>
                                 </div>
+                                <!-- Hapus -->
                                 <form action="{{ route('room.destroy', $r->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus ruangan ini?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-500 hover:text-red-700 text-xs font-semibold px-2 py-1 bg-red-50 rounded border border-red-200">Hapus</button>
+                                    <button type="submit" class="text-red-600 hover:text-red-800 text-xs font-semibold px-2 py-1 bg-red-50 rounded border border-red-200">
+                                        Hapus
+                                    </button>
                                 </form>
                             </div>
-                        @empty
-                            <p class="text-xs text-gray-400 italic">Belum ada ruangan terdaftar.</p>
-                        @endforelse
-                    </div>
+
+                            <!-- Form Edit -->
+                            <form action="{{ route('room.update', $r->id) }}" method="POST" class="pt-2 border-t border-gray-200 grid grid-cols-3 gap-2 items-center">
+                                @csrf
+                                @method('PUT')
+                                <div>
+                                    <input type="text" name="name" value="{{ $r->name }}" required class="w-full text-xs border-gray-300 rounded p-1 bg-white" placeholder="Nama">
+                                </div>
+                                <div>
+                                    <input type="number" name="capacity" value="{{ $r->capacity }}" min="1" required class="w-full text-xs border-gray-300 rounded p-1 bg-white" placeholder="Kapasitas">
+                                </div>
+                                <div class="flex space-x-1">
+                                    <input type="hidden" name="location" value="{{ $r->location }}">
+                                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-1 px-2 rounded transition">
+                                        Update
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    @empty
+                        <p class="text-xs text-gray-400 italic">Belum ada ruangan terdaftar.</p>
+                    @endforelse
+                </div>
                 </div>
             </div>
             <div class="lg:col-span-2 space-y-6">
