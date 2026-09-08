@@ -14,9 +14,23 @@ class BookingController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request, Room $room)
     {
-        //
+        
+        $request->validate([
+            'date' => 'required|date',
+            'status' => 'sometimes|in:confirmed,cancelled',
+        ]);
+
+        $date = $request->query('date');
+        $status = $request->query('status');
+        $bookings = Booking::where('room_id', $room->id)
+            ->when($date, fn($q) => $q->whereDate('start_time', $date))
+            ->when($status, fn($q) => $q->where('status', $status))
+            ->orderBy('start_time')
+            ->get();
+
+        return BookingResource::collection($bookings);
     }
 
     /**
