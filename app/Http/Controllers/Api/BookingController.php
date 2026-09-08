@@ -6,6 +6,7 @@ use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BookingResource;
 use App\Http\Requests\StoreBookingRequest;
@@ -39,15 +40,15 @@ class BookingController extends Controller
    public function store(StoreBookingRequest $request)
     {
         $validated = $request->validated();
-        $user = $request->input('resolved_user');
+        $userId = Auth::id();
 
         try {
-            $booking = DB::transaction(function () use ($validated, $user) {
+            $booking = DB::transaction(function () use ($validated, $userId) { 
                 
-                //  Gatekeeper lock baris room supaya request lain untuk room yang sama antre
+                // Gatekeeper lock baris room
                 Room::where('id', $validated['room_id'])->lockForUpdate()->firstOrFail();
 
-                // cek overlap menggunakan locking read 
+                // Cek overlap menggunakan locking read 
                 $isConflict = Booking::overlapping(
                     $validated['room_id'], 
                     $validated['start_time'], 
@@ -60,10 +61,10 @@ class BookingController extends Controller
                     ], 409));
                 }
 
-                // booking baru
+                // Booking baru
                 return Booking::create([
                     'room_id' => $validated['room_id'],
-                    'user_id' => $user->id,
+                    'user_id' => $userId, 
                     'start_time' => $validated['start_time'],
                     'end_time' => $validated['end_time'],
                     'status' => 'confirmed',
@@ -75,7 +76,6 @@ class BookingController extends Controller
                 ->setStatusCode(201);
 
         } catch (\Illuminate\Http\Exceptions\HttpResponseException $e) {
-            
             throw $e;
         }
     }
