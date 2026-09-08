@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BookingResource;
 use App\Http\Requests\StoreBookingRequest;
+use Carbon\Carbon;
 class BookingController extends Controller
 {
     /**
@@ -65,8 +66,8 @@ class BookingController extends Controller
                 return Booking::create([
                     'room_id' => $validated['room_id'],
                     'user_id' => $userId, 
-                    'start_time' => $validated['start_time'],
-                    'end_time' => $validated['end_time'],
+                    'start_time' => Carbon::parse($validated['start_time'], 'Asia/Jakarta')->setTimezone('UTC')->toDateTimeString(),
+                    'end_time' => Carbon::parse($validated['end_time'], 'Asia/Jakarta')->setTimezone('UTC')->toDateTimeString(),
                     'status' => 'confirmed',
                 ]);
             });
@@ -121,4 +122,29 @@ class BookingController extends Controller
             'data' => clone new BookingResource($booking)
         ], 200);
     }
+    public function searchAvailable(Request $request)
+{
+    $request->validate([
+        'start_time' => 'required|date',
+        'end_time' => 'required|date|after:start_time',
+        'min_capacity' => 'nullable|integer|min:1',
+    ]);
+    $startTime = $request->input('start_time');
+    $endTime = $request->input('end_time');
+    $minCapacity = $request->input('min_capacity', 1);
+    $bookedRoomIds = Booking::where('status', 'confirmed')
+        ->where(function ($query) use ($startTime, $endTime) {
+            $query->where('start_time', '<', $endTime)
+                  ->where('end_time', '>', $startTime);
+        })
+        ->pluck('room_id');
+    $availableRooms = Room::where('capacity', '>=', $minCapacity)
+        ->whereNotIn('id', $bookedRoomIds)
+        ->get();
+
+    return response()->json([
+        'status' => 'success',
+        'data' => $availableRooms
+    ]);
+}
 }

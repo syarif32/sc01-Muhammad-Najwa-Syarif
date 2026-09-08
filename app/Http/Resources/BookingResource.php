@@ -4,25 +4,26 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Carbon\Carbon;
 
 class BookingResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
             'room_id' => $this->room_id,
             'user_id' => $this->user_id,
-            'start_time' => $this->start_time?->toIso8601String(),
-            'end_time' => $this->end_time?->toIso8601String(),
+            // Konversi dari acuan database ke zona waktu lokal 
+            'start_time' => Carbon::parse($this->start_time, 'UTC')
+                                   ->setTimezone('Asia/Jakarta')
+                                   ->toDateTimeString(),
+            'end_time' => Carbon::parse($this->end_time, 'UTC')
+                                 ->setTimezone('Asia/Jakarta')
+                                 ->toDateTimeString(),
             'status' => $this->status,
-            'created_at' => $this->created_at?->toIso8601String(),
-            'updated_at' => $this->updated_at?->toIso8601String(),
+            'created_at' => $this->created_at?->toDateTimeString(),
+            'updated_at' => $this->updated_at?->toDateTimeString(),
         ];
     }
 }

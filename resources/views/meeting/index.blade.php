@@ -8,29 +8,23 @@
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans antialiased">
     <div class="max-w-6xl mx-auto p-6 space-y-6">
-        
-        <!-- HEADER -->
         <header class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-bold">Sistem Reservasi Ruang Meeting</h1>
                 
             </div>
-            
         </header>
         @if(session('success'))
             <div class="p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm font-medium">
                 {{ session('success') }}
             </div>
         @endif
-
         @if(session('error'))
             <div class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm font-medium">
                 {{ session('error') }}
             </div>
         @endif
-
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
             <!-- MANAJEMEN RUANGAN -->
             <div class="space-y-6">
                 <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -101,8 +95,50 @@
                 </div>
                 </div>
             </div>
+            
             <div class="lg:col-span-2 space-y-6">
-                
+                <!-- PENCARIAN RUANGAN TERSEDIA  -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-md font-semibold mb-4 text-indigo-600">Cari Ruangan Kosong (Enhancement)</h2>
+                    <form action="{{ route('room.search.web') }}" method="GET" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 uppercase mb-1">Waktu Mulai</label>
+                            <input type="datetime-local" name="start_time" value="{{ $startTime ?? '' }}" required class="w-full border-gray-300 rounded-md border p-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 uppercase mb-1">Waktu Selesai</label>
+                            <input type="datetime-local" name="end_time" value="{{ $endTime ?? '' }}" required class="w-full border-gray-300 rounded-md border p-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 uppercase mb-1">Min. Kapasitas</label>
+                            <input type="number" name="min_capacity" value="{{ $minCapacity ?? 1 }}" min="1" class="w-full border-gray-300 rounded-md border p-2 text-sm">
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 text-white font-medium py-2 px-4 rounded-md hover:bg-indigo-700 transition text-sm">
+                            Cari Ketersediaan
+                        </button>
+                    </form>
+
+                    @isset($availableRooms)
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <h4 class="text-xs font-bold text-gray-700 uppercase mb-2">Hasil Pencarian Ruangan Kosong:</h4>
+                            <div class="space-y-2 max-h-40 overflow-y-auto">
+                                @forelse($availableRooms as $avail)
+                                    <div class="p-2 bg-green-50 border border-green-200 rounded text-xs flex justify-between items-center">
+                                        <div>
+                                            <p class="font-semibold text-green-900">{{ $avail->name }}</p>
+                                            <p class="text-[10px] text-green-700">Kapasitas: {{ $avail->capacity }} | {{ $avail->location }}</p>
+                                        </div>
+                                        <a href="{{ route('meeting.index', ['room_id' => $avail->id, 'date' => date('Y-m-d', strtotime($startTime))]) }}" class="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700">
+                                            Pilih
+                                        </a>
+                                    </div>
+                                @empty
+                                    <p class="text-xs text-red-500 italic">Tidak ada ruangan yang tersedia pada rentang waktu tersebut.</p>
+                                @endforelse
+                            </div>
+                        </div>
+                    @endisset
+                </div>
                 <!-- FILTER RUANGAN & TANGGAL -->
                 <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                     <h2 class="text-md font-semibold mb-4 text-gray-700">2. Lihat & Filter Jadwal Booking</h2>

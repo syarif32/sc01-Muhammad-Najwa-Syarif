@@ -128,4 +128,34 @@ class MeetingRoomController extends Controller
 
         return back()->with('success', 'Reservasi berhasil dibatalkan.');
     }
+    public function search(Request $request)
+    {
+        $request->validate([
+            'start_time' => 'required|date',
+            'end_time' => 'required|date|after:start_time',
+            'min_capacity' => 'nullable|integer|min:1',
+        ]);
+
+        $startTime = $request->input('start_time');
+        $endTime = $request->input('end_time');
+        $minCapacity = $request->input('min_capacity', 1);
+
+        $bookedRoomIds = Booking::where('status', 'confirmed')
+            ->where(function ($query) use ($startTime, $endTime) {
+                $query->where('start_time', '<', $endTime)
+                      ->where('end_time', '>', $startTime);
+            })
+            ->pluck('room_id');
+
+        $availableRooms = Room::where('capacity', '>=', $minCapacity)
+            ->whereNotIn('id', $bookedRoomIds)
+            ->get();
+
+        $rooms = Room::all();
+        $selectedRoom = null;
+        $bookings = [];
+        $date = date('Y-m-d', strtotime($startTime));
+
+        return view('meeting.index', compact('rooms', 'selectedRoom', 'bookings', 'date', 'availableRooms', 'startTime', 'endTime'));
+    }
 }
