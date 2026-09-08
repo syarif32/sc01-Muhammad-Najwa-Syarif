@@ -5,6 +5,7 @@ use App\Models\Room;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BookingResource;
 use App\Http\Requests\StoreBookingRequest;
@@ -84,8 +85,26 @@ class BookingController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    
+    public function destroy(Booking $booking)
     {
-        //
+        // Authorization
+        \Illuminate\Support\Facades\Gate::authorize('cancel', $booking);
+
+        //  Cek status saat ini
+        if ($booking->status === 'cancelled') {
+            return response()->json([
+                'message' => 'This booking is already cancelled.'
+            ], 409);
+        }
+
+        // Ubah status Soft-cancel
+        $booking->status = 'cancelled';
+        $booking->save();
+
+        return response()->json([
+            'message' => 'Booking cancelled successfully.',
+            'data' => clone new BookingResource($booking)
+        ], 200);
     }
 }

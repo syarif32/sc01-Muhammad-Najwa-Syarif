@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class ResolveUserIdentity
@@ -22,7 +23,8 @@ class ResolveUserIdentity
         if (!$user) {
             return response()->json(['message' => 'Unauthorized. User not found.'], 401);
         }
-        $request->merge(['resolved_user' => $user]);
+
+        Auth::setUser($user);
 
         return $next($request);
     }
