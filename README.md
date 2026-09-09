@@ -1,4 +1,4 @@
-Markdown# Sistem Reservasi Ruang Meeting
+Sistem Reservasi Ruang Meeting
 
 Backend RESTful API dan antarmuka web berbasis Laravel Blade untuk pengelolaan ruang meeting dan reservasi. Proyek ini berfokus pada pemodelan data, konsistensi data, aturan bisnis, pencegahan *double-booking*, *authorization*, serta penanganan *concurrency*.
 
