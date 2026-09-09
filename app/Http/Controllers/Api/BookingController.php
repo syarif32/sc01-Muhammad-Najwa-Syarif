@@ -54,6 +54,7 @@ class BookingController extends Controller
                     $validated['room_id'], 
                     $validated['start_time'], 
                     $validated['end_time']
+                    
                 )->lockForUpdate()->exists();
 
                 if ($isConflict) {
@@ -68,6 +69,7 @@ class BookingController extends Controller
                     'user_id' => $userId, 
                     'start_time' => Carbon::parse($validated['start_time'], 'Asia/Jakarta')->setTimezone('UTC')->toDateTimeString(),
                     'end_time' => Carbon::parse($validated['end_time'], 'Asia/Jakarta')->setTimezone('UTC')->toDateTimeString(),
+                    
                     'status' => 'confirmed',
                 ]);
             });

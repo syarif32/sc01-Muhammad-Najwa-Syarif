@@ -125,6 +125,11 @@ class MeetingRoomController extends Controller
 
         $booking->status = 'cancelled';
         $booking->save();
+        \App\Models\BookingLog::create([
+        'booking_id' => $booking->id,
+        'action' => 'CANCELLED',
+        'description' => "Booking dibatalkan oleh User ID: {$request->user_id}"
+    ]);
 
         return back()->with('success', 'Reservasi berhasil dibatalkan.');
     }

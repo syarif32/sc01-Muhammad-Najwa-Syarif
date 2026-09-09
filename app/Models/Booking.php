@@ -45,4 +45,8 @@ class Booking extends Model
                      ->where('start_time', '<', $endTime)
                      ->where('end_time', '>', $startTime);
     }
+    public function logs()
+    {
+        return $this->hasMany(BookingLog::class);
+    }
 }
